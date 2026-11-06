@@ -1,0 +1,76 @@
+/* ============ VARIABLES: paleta del juego ============ */
+:root {
+  --negro: #07050d;
+  --gris: #1a1626;
+  --morado: #7b2fff;
+  --rosa: #ff2e9a;
+  --azul: #21d4ff;
+  --rojo: #ff3b4e;
+  --texto: #d9d2ee;
+  --fuente-titulo: 'Orbitron', 'Segoe UI', sans-serif;
+  --fuente-ui: 'Share Tech Mono', 'Consolas', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; background: var(--negro); color: var(--texto); font-family: var(--fuente-ui); }
+
+#fondo { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+
+/* Efecto CRT (se activa/desactiva en Configuración) */
+.scanlines { position: fixed; inset: 0; pointer-events: none; z-index: 5;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,.28) 0 1px, transparent 1px 3px);
+  box-shadow: inset 0 0 160px rgba(0,0,0,.85); }
+body.sin-crt .scanlines { display: none; }
+
+#app { position: relative; z-index: 2; height: 100%; display: grid; place-items: center; padding: 24px; }
+
+/* ============ PANTALLAS ============ */
+.pantalla { display: none; width: min(560px, 100%); text-align: left; }
+.pantalla.activa { display: block; animation: encender .35s steps(6); }
+@keyframes encender { from { opacity: 0; filter: brightness(3); } to { opacity: 1; filter: none; } }
+
+.sistema { color: var(--azul); font-size: .85rem; margin-bottom: 14px; }
+.sistema::before { content: "> "; color: var(--rosa); }
+
+/* Título con glitch: el elemento memorable */
+.titulo { font-family: var(--fuente-titulo); font-weight: 900; font-size: clamp(2rem, 8vw, 4.2rem);
+  line-height: 1; color: #fff; position: relative; margin-bottom: 36px;
+  text-shadow: 0 0 18px var(--rosa), 0 0 42px var(--morado); }
+.titulo span { color: var(--rosa); }
+.titulo::before, .titulo::after { content: attr(data-texto); position: absolute; inset: 0; overflow: hidden; opacity: .8; }
+.titulo::before { color: var(--azul); animation: glitch-a 4.5s infinite steps(1); }
+.titulo::after  { color: var(--rojo); animation: glitch-b 4.5s infinite steps(1); }
+@keyframes glitch-a { 0%,92%,100% { transform: none; clip-path: inset(0 0 100% 0); }
+  93% { transform: translate(-4px,0); clip-path: inset(15% 0 60% 0); } 96% { transform: translate(3px,0); clip-path: inset(55% 0 20% 0); } }
+@keyframes glitch-b { 0%,90%,100% { transform: none; clip-path: inset(0 0 100% 0); }
+  91% { transform: translate(4px,0); clip-path: inset(40% 0 35% 0); } 95% { transform: translate(-3px,0); clip-path: inset(70% 0 5% 0); } }
+
+h2 { font-family: var(--fuente-titulo); font-size: 1.6rem; color: var(--azul); margin-bottom: 20px; text-shadow: 0 0 12px var(--azul); }
+
+/* ============ BOTONES DEL MENÚ ============ */
+.menu { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+.menu button { font: inherit; font-size: 1.15rem; text-align: left; color: var(--texto); cursor: pointer;
+  background: rgba(26,22,38,.78); border: 1px solid #3a3256; border-left: 4px solid var(--morado);
+  padding: 12px 18px; transition: transform .12s, border-color .12s, background .12s; }
+.menu button:hover, .menu button:focus-visible, .menu button.sel {
+  outline: none; transform: translateX(8px); color: #fff; border-color: var(--rosa);
+  background: rgba(255,46,154,.14); box-shadow: 0 0 18px rgba(255,46,154,.35); }
+.menu button.sel::before { content: "▶ "; color: var(--rosa); }
+.menu button:disabled { opacity: .35; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* ============ PANELES ============ */
+.panel, .panel-texto { background: rgba(10,8,18,.8); border: 1px solid #3a3256; padding: 18px; margin-bottom: 18px; line-height: 1.6; }
+.panel p + p { margin-top: 8px; }
+.panel label { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.panel input[type=range] { width: 100%; accent-color: var(--rosa); }
+.panel .check { justify-content: flex-start; align-items: center; margin: 0; cursor: pointer; }
+.panel .check input { accent-color: var(--rosa); width: 18px; height: 18px; }
+output { color: var(--azul); }
+
+.estado { margin-top: 22px; color: var(--azul); font-size: .9rem; }
+.estado.alerta { color: var(--rojo); }
+.ayuda { margin-top: 28px; font-size: .8rem; opacity: .55; }
+
+@media (prefers-reduced-motion: reduce) {
+  .titulo::before, .titulo::after { animation: none; }
+  .pantalla.activa { animation: none; }
+}

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CYBER//WASTELAND</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="static/css/style.css">
+</head>
+<body>
+  <!-- Fondo animado: skyline, lluvia y niebla (lo dibuja script.js) -->
+  <canvas id="fondo"></canvas>
+  <div class="scanlines" aria-hidden="true"></div>
+
+  <main id="app">
+
+    <!-- PANTALLA: MENÚ PRINCIPAL -->
+    <section class="pantalla activa" id="pantalla-menu">
+      <p class="sistema">NEOCORP_OS v2.07 // terminal de supervivencia</p>
+      <h1 class="titulo" data-texto="CYBER//WASTELAND">CYBER<span>//</span>WASTELAND</h1>
+      <nav class="menu" aria-label="Menú principal">
+        <button data-accion="nueva">Nueva partida</button>
+        <button data-accion="continuar" id="btn-continuar">Continuar partida</button>
+        <button data-accion="config">Configuración</button>
+        <button data-accion="creditos">Créditos</button>
+      </nav>
+      <p class="estado" id="estado-guardado"></p>
+      <p class="ayuda">↑ ↓ para moverte · Enter para elegir · Esc para volver</p>
+    </section>
+
+    <!-- PANTALLA: NUEVA PARTIDA (confirmación) -->
+    <section class="pantalla" id="pantalla-nueva">
+      <h2>Nueva partida</h2>
+      <p id="texto-nueva" class="panel-texto"></p>
+      <nav class="menu">
+        <button data-accion="iniciar">Iniciar</button>
+        <button data-accion="volver">Cancelar</button>
+      </nav>
+    </section>
+
+    <!-- PANTALLA: CONFIGURACIÓN -->
+    <section class="pantalla" id="pantalla-config">
+      <h2>Configuración</h2>
+      <div class="panel">
+        <label>Intensidad de lluvia <output id="out-lluvia"></output>
+          <input type="range" id="cfg-lluvia" min="0" max="100"></label>
+        <label>Volumen general <output id="out-volumen"></output>
+          <input type="range" id="cfg-volumen" min="0" max="100"></label>
+        <label class="check"><input type="checkbox" id="cfg-efectos"> Efecto de pantalla CRT</label>
+      </div>
+      <nav class="menu">
+        <button data-accion="borrar">Borrar partida guardada</button>
+        <button data-accion="volver">Volver</button>
+      </nav>
+    </section>
+
+    <!-- PANTALLA: CRÉDITOS -->
+    <section class="pantalla" id="pantalla-creditos">
+      <h2>Créditos</h2>
+      <div class="panel">
+        <p>Diseño y programación: tú, con ayuda de Claude.</p>
+        <p>Tecnologías: HTML5, CSS3, JavaScript y Canvas.</p>
+        <p>Tipografías: Orbitron y Share Tech Mono (Google Fonts).</p>
+      </div>
+      <nav class="menu"><button data-accion="volver">Volver</button></nav>
+    </section>
+
+    <!-- PANTALLA: JUEGO (marcador de posición hasta la Etapa 2) -->
+    <section class="pantalla" id="pantalla-juego">
+      <h2>Sector 00 // Refugio</h2>
+      <p class="panel-texto">La partida se ha creado y guardado. El mundo jugable llega en la Etapa 2.</p>
+      <nav class="menu">
+        <button data-accion="guardar">Guardar</button>
+        <button data-accion="volver">Salir al menú</button>
+      </nav>
+    </section>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
