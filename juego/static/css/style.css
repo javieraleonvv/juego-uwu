@@ -74,3 +74,46 @@ output { color: var(--azul); }
   .titulo::before, .titulo::after { animation: none; }
   .pantalla.activa { animation: none; }
 }
+
+/* ============ JUEGO (Etapa 2-3) ============ */
+#pantalla-juego { position: fixed; inset: 0; width: 100%; }
+#juego { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain;
+  image-rendering: pixelated; background: #000; }
+.pausa { display: none; position: absolute; inset: 0; z-index: 3; background: rgba(7,5,13,.82);
+  flex-direction: column; justify-content: center; padding: 0 max(24px, calc(50% - 210px)); }
+.pausa.abierta { display: flex; }
+
+/* ============ PERSONALIZACIÓN ============ */
+.pers { display: none; position: fixed; inset: 0; z-index: 20; background: rgba(7,5,13,.9); place-items: center; padding: 12px; }
+.pers.abierta { display: grid; animation: encender .3s steps(5); }
+.pers-panel { display: grid; grid-template-columns: 150px 190px 1fr; grid-template-rows: auto 1fr auto; gap: 14px;
+  width: min(900px, 100%); max-height: 96vh; padding: 18px; background: rgba(10,8,18,.96);
+  border: 1px solid var(--morado); box-shadow: 0 0 40px rgba(123,47,255,.35); }
+.pers-titulo { grid-column: 1 / -1; margin: 0; }
+.pers-titulo small { font: .8rem var(--fuente-ui); color: var(--rosa); margin-left: 10px; text-shadow: none; }
+.pers-cats, .pers-subs { display: flex; flex-direction: column; gap: 6px; }
+.pers-cats button, .pers-subs button, .pers-acciones button, .pers-sel button {
+  font: inherit; color: var(--texto); cursor: pointer; background: rgba(26,22,38,.8);
+  border: 1px solid #3a3256; padding: 7px 10px; text-align: left; }
+.pers-cats button.sel, .pers-subs button.sel { border-color: var(--rosa); background: rgba(255,46,154,.16); color: #fff; }
+.pers button:hover, .pers button:focus-visible { outline: none; border-color: var(--azul); box-shadow: 0 0 10px rgba(33,212,255,.4); }
+.pers-escena { background: linear-gradient(#1c0f33, #07050d); border: 1px solid #3a3256; display: grid; place-items: center; }
+#pers-vista { width: 144px; height: 192px; image-rendering: pixelated; }
+.pers-opciones { display: flex; flex-direction: column; gap: 12px; overflow-y: auto; min-height: 0; }
+.pers-subs { flex-direction: row; flex-wrap: wrap; }
+.pers-sel { display: flex; align-items: center; gap: 8px; }
+.pers-sel output { flex: 1; text-align: center; color: var(--azul); }
+.pers-sel button { padding: 8px 14px; }
+.pers-paleta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.pers-paleta .muestra { width: 26px; height: 26px; padding: 0; border: 2px solid #3a3256; }
+.pers-paleta .muestra.sel { border-color: #fff; box-shadow: 0 0 10px #fff; }
+#pers-identidad { display: none; }
+#pers-identidad label { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+#pers-identidad input, #pers-identidad select { font: inherit; color: var(--texto); background: #0d0a18; border: 1px solid #3a3256; padding: 7px; }
+.pers-nota { font-size: .8rem; opacity: .6; }
+.pers-acciones { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+.pers-acciones #pers-guardar { border-color: var(--rosa); background: rgba(255,46,154,.2); }
+@media (max-width: 760px) {
+  .pers-panel { grid-template-columns: 1fr; grid-template-rows: none; overflow-y: auto; }
+  .pers-cats { flex-direction: row; flex-wrap: wrap; }
+}

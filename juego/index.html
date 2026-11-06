@@ -23,6 +23,7 @@
       <nav class="menu" aria-label="Menú principal">
         <button data-accion="nueva">Nueva partida</button>
         <button data-accion="continuar" id="btn-continuar">Continuar partida</button>
+        <button data-accion="personalizar">Personalizar personaje</button>
         <button data-accion="config">Configuración</button>
         <button data-accion="creditos">Créditos</button>
       </nav>
@@ -36,6 +37,7 @@
       <p id="texto-nueva" class="panel-texto"></p>
       <nav class="menu">
         <button data-accion="iniciar">Iniciar</button>
+        <button data-accion="personalizarNueva">Personalizar personaje</button>
         <button data-accion="volver">Cancelar</button>
       </nav>
     </section>
@@ -67,18 +69,54 @@
       <nav class="menu"><button data-accion="volver">Volver</button></nav>
     </section>
 
-    <!-- PANTALLA: JUEGO (marcador de posición hasta la Etapa 2) -->
+    <!-- PANTALLA: JUEGO (canvas a pantalla completa + menú de pausa) -->
     <section class="pantalla" id="pantalla-juego">
-      <h2>Sector 00 // Refugio</h2>
-      <p class="panel-texto">La partida se ha creado y guardado. El mundo jugable llega en la Etapa 2.</p>
-      <nav class="menu">
-        <button data-accion="guardar">Guardar</button>
-        <button data-accion="volver">Salir al menú</button>
-      </nav>
+      <canvas id="juego"></canvas>
+      <div class="pausa" id="pausa">
+        <h2>Pausa</h2>
+        <nav class="menu">
+          <button data-accion="reanudar">Reanudar</button>
+          <button data-accion="guardar">Guardar partida</button>
+          <button data-accion="volver">Salir al menú</button>
+        </nav>
+        <p class="estado" id="pausa-estado"></p>
+      </div>
     </section>
 
   </main>
 
-  <script src="script.js"></script>
+  <!-- CAPA: PERSONALIZACIÓN (se abre desde el menú, "Nueva partida" y el espejo del refugio) -->
+  <div class="pers" id="personalizar">
+    <div class="pers-panel">
+      <h2 class="pers-titulo">Personalización <small id="pers-origen"></small></h2>
+      <nav class="pers-cats" id="pers-cats" aria-label="Categorías"></nav>
+      <div class="pers-escena"><canvas id="pers-vista" width="144" height="192"></canvas></div>
+      <div class="pers-opciones">
+        <div class="pers-subs" id="pers-subs"></div>
+        <div id="pers-selector">
+          <div class="pers-sel"><button id="pers-prev" aria-label="Anterior">◀</button><output id="pers-valor"></output><button id="pers-next" aria-label="Siguiente">▶</button></div>
+          <div class="pers-paleta" id="pers-paleta"></div>
+        </div>
+        <div id="pers-identidad">
+          <label>Nombre <input id="pers-nombre" maxlength="16" autocomplete="off"></label>
+          <label>Pronombres <select id="pers-pron"><option value="él">él</option><option value="ella">ella</option><option value="elle">elle</option><option value="ninguno">solo mi nombre</option></select></label>
+          <label>Animación de espera <select id="pers-anim"><option value="respirar">Respirar</option><option value="mirar">Mirar alrededor</option><option value="saludar">Saludar</option></select></label>
+          <label>Postura <select id="pers-postura"><option value="recta">Recta</option><option value="relajada">Relajada</option><option value="alerta">Alerta</option></select></label>
+          <p class="pers-nota">La voz se añadirá cuando exista el audio (Etapa 10).</p>
+        </div>
+      </div>
+      <div class="pers-acciones">
+        <button id="pers-azar">Aleatorio</button><button id="pers-reset">Restablecer</button>
+        <button id="pers-guardar">Guardar apariencia</button><button id="pers-cancelar">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="static/js/apariencia.js"></script>
+  <script src="static/js/mundo.js"></script>
+  <script src="static/js/jugador.js"></script>
+  <script src="static/js/personalizar.js"></script>
+  <script src="static/js/juego.js"></script>
+  <script src="static/js/script.js"></script>
 </body>
 </html>

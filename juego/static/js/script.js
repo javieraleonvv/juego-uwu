@@ -43,7 +43,10 @@ const Guardado = {
     return {
       version: CONFIG.version,
       fecha: new Date().toISOString(),
-      jugador: { x: 0, y: 0 },
+      apariencia: Apariencia.cargarPlantilla(),   // personalización elegida antes de empezar
+      jugador: { x: 0, y: 0 },   // x = 0 significa "posición inicial"
+      objetosRecogidos: [],      // Etapa 3: objetos ya cogidos
+      documentos: [],            // Etapa 3: documentos leídos
       estadisticas: {},   // Etapa 4
       inventario: [],     // Etapa 5
       misiones: {},       // Etapa 9
@@ -72,6 +75,7 @@ const Pantallas = {
     document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
     document.getElementById('pantalla-' + nombre).classList.add('activa');
     this.actual = nombre;
+    if (nombre === 'juego') Juego.iniciar(); else Juego.detener();   // arranca o para el juego
     Menu.seleccionar(0);
   }
 };
@@ -128,7 +132,7 @@ const Fondo = {
 
   bucle(t) {
     this.tiempo = t / 1000;
-    this.dibujar();
+    if (Pantallas.actual !== 'juego') this.dibujar();   // no gastar CPU durante la partida
     requestAnimationFrame(tt => this.bucle(tt));
   },
 
@@ -226,10 +230,16 @@ const Menu = {
       Guardado.escribir(partidaActual);
       Pantallas.mostrar('juego');
     },
+    reanudar() { Juego.reanudar(); },
     guardar() {
-      if (partidaActual) Guardado.escribir(partidaActual);
+      if (!partidaActual) return;
+      if (Juego.activo) Juego.volcarEstado();   // copia posición y salud del jugador
+      Guardado.escribir(partidaActual);
       Menu.actualizarEstado();
+      document.getElementById('pausa-estado').textContent = '> Partida guardada';
     },
+    personalizar() { Personalizar.abrir('menu'); },
+    personalizarNueva() { Personalizar.abrir('plantilla'); },
     config() { Pantallas.mostrar('config'); },
     creditos() { Pantallas.mostrar('creditos'); },
     borrar() {
@@ -257,8 +267,11 @@ const Menu = {
 
     // Teclado: flechas/W/S para moverse, Enter para elegir, Esc para volver
     document.addEventListener('keydown', e => {
+      if (Personalizar.abierto) return;   // la personalización tiene sus propias teclas
       if (e.target.matches('input')) { if (e.key !== 'Escape') return; }
       const k = e.key.toLowerCase();
+      // En partida, el teclado lo controla Juego (salvo el menú de pausa: solo W/S/flechas)
+      if (Pantallas.actual === 'juego' && (!Juego.pausado || k === 'escape')) return;
       if (k === 'arrowdown' || k === 's') { e.preventDefault(); this.seleccionar(this.indice + 1); }
       else if (k === 'arrowup' || k === 'w') { e.preventDefault(); this.seleccionar(this.indice - 1); }
       else if (k === 'escape' && Pantallas.actual !== 'menu') this.acciones.volver();
@@ -298,6 +311,7 @@ window.addEventListener('DOMContentLoaded', () => {
   Ajustes.cargar();
   Ajustes.aplicar();
   iniciarConfiguracion();
+  Personalizar.iniciar();
   Fondo.iniciar();
   Menu.iniciar();
 });
