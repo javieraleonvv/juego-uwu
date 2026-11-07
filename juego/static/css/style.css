@@ -117,3 +117,6 @@ output { color: var(--azul); }
   .pers-panel { grid-template-columns: 1fr; grid-template-rows: none; overflow-y: auto; }
   .pers-cats { flex-direction: row; flex-wrap: wrap; }
 }
+#juego { cursor: crosshair; }
+
+#resumen-lineas { white-space: pre-line; }

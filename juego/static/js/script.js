@@ -199,7 +199,7 @@ const Menu = {
 
   botonesVisibles() {
     const pantalla = document.querySelector('.pantalla.activa');
-    return [...pantalla.querySelectorAll('.menu button:not(:disabled)')];
+    return [...pantalla.querySelectorAll('.menu button:not(:disabled)')].filter(b => b.getClientRects().length > 0);   // solo los visibles
   },
   seleccionar(i) {
     const botones = this.botonesVisibles();
@@ -231,6 +231,8 @@ const Menu = {
       Pantallas.mostrar('juego');
     },
     reanudar() { Juego.reanudar(); },
+    seguir() { Juego.cerrarResumen(); },
+    siguiente() { Campana.irANivel(Campana.c.nivel + 1); },
     guardar() {
       if (!partidaActual) return;
       if (Juego.activo) Juego.volcarEstado();   // copia posición y salud del jugador

@@ -9,7 +9,7 @@ const Jugador = {
   x: 80, y: 190, w: 12, h: 26, vx: 0, vy: 0, dir: 1,
   enSuelo: false, agachado: false,
   vida: 100, vidaMax: 100,
-  ataque: 0, golpeo: false, invulnerable: 0,
+  ataque: 0, ataqueMax: 18, alcance: 22, danoMelee: 10, golpeados: new Set(), invulnerable: 0,
   coyote: 0, buffer: 0, animT: 0, estado: 'quieto',
   apariencia: Apariencia.defecto(),   // se sustituye al cargar la partida
 
@@ -25,7 +25,7 @@ const Jugador = {
   actualizar(inp) {
     // --- Movimiento horizontal con aceleración y rozamiento ---
     const dirIn = (inp.der ? 1 : 0) - (inp.izq ? 1 : 0);
-    const vMax = this.agachado ? 0.7 : (inp.shift ? 2.4 : 1.3);
+    const vMax = (this.agachado ? 0.7 : (inp.shift ? 2.4 : 1.3)) * Campana.multVel();
     if (dirIn) { this.vx += dirIn * (this.enSuelo ? 0.3 : 0.2); this.dir = dirIn; }
     else this.vx *= this.enSuelo ? 0.75 : 0.96;
     this.vx = Math.max(-vMax, Math.min(vMax, this.vx));
@@ -46,7 +46,10 @@ const Jugador = {
     this.vy = Math.min(this.vy + 0.28, 7);                           // gravedad
 
     // --- Ataque cuerpo a cuerpo ---
-    if (inp.ataquePulsado && this.ataque === 0) { this.ataque = 18; this.golpeo = false; }
+    if (inp.ataquePulsado && this.ataque === 0) {                    // el arma cuerpo a cuerpo define duración, alcance y daño
+      this.ataqueMax = this.ataque = inp.meleeDur || 18; this.alcance = inp.meleeAlc || 22;
+      this.danoMelee = inp.meleeDano || 10; this.golpeados = new Set();
+    }
     if (this.ataque > 0) this.ataque--;
     if (this.invulnerable > 0) this.invulnerable--;
 
@@ -64,10 +67,12 @@ const Jugador = {
       : Math.abs(this.vx) > 1.5 ? 'correr' : Math.abs(this.vx) > 0.1 ? 'caminar' : 'quieto';
   },
 
-  /* Zona que golpea el ataque (solo en los fotogramas "activos") */
+  /* Zona que golpea el arma cuerpo a cuerpo (solo en los fotogramas "activos" del golpe) */
   cajaAtaque() {
-    if (this.ataque > 6 && this.ataque < 13 && !this.golpeo)
-      return { x: this.dir > 0 ? this.x + this.w : this.x - 22, y: this.y + 4, w: 22, h: 16 };
+    if (this.ataque <= 0) return null;
+    const p = 1 - this.ataque / this.ataqueMax;
+    if (p > 0.33 && p < 0.72)
+      return { x: this.dir > 0 ? this.x + this.w : this.x - this.alcance, y: this.y + 2, w: this.alcance, h: 20 };
     return null;
   },
 
@@ -84,7 +89,12 @@ const Jugador = {
     ctx.translate(Math.round(this.x + this.w / 2), Math.round(this.y + this.h));
     ctx.scale(this.dir, 1);
     if (this.invulnerable > 0 && Math.floor(this.invulnerable / 4) % 2) ctx.globalAlpha = 0.4;
+    const A = Arsenal.d ? Arsenal.arma() : null, melee = !A || A.tipo === 'melee';
+    const conTubo = this.ataque > 0 && !melee;                       // golpe de tubo llevando un arma de fuego
+    const apunta = A && !melee && !conTubo;
     Apariencia.dibujarPersonaje(ctx, this.apariencia, {
+      arma: conTubo ? ARMAS.tubo : A, retro: Math.min(3, Arsenal.retro || 0),
+      apuntar: apunta ? Math.atan2(Math.sin(Juego.ang), Math.cos(Juego.ang) * this.dir) : null,
       lp: this.agachado ? 3 : 9, torso: this.agachado ? 6 : 10,
       paso: Math.round(Math.sin(this.animT) * (this.estado === 'correr' ? 3 : 2)),
       enSuelo: this.enSuelo, agachado: this.agachado, quieto: this.estado === 'quieto', t: t || 0,

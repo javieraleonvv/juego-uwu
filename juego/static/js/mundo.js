@@ -17,7 +17,8 @@ function semilla(s) {
 }
 
 const Mundo = {
-  nombre: 'Barrio 7 // Calle Muerta',
+  id: 1, nombre: 'Nivel 1 // Los restos de la ciudad',
+  necesarios: ['e2', 'e4', 'e5', 'e6', 'e7'],      // enemigos que hay que eliminar para abrir la salida
   ancho: 3600, alto: 270, suelo: 232,
   inicio: { x: 80, y: 190 },
   neon: ['#ff2e9a', '#21d4ff', '#7b2fff', '#ff3b4e'],
@@ -34,7 +35,11 @@ const Mundo = {
     { x: 1640, y: 140, w: 70, h: 6, t: 'andamio' },
     { x: 1780, y: 96, w: 80, h: 6, t: 'andamio' },
     { x: 2000, y: 208, w: 64, h: 24, t: 'contenedor', c: 2 },
-    { x: 2750, y: 192, w: 24, h: 40, t: 'barrera' }
+    { x: 2750, y: 192, w: 24, h: 40, t: 'barrera' },
+    // Coberturas (protegen de los disparos; agachado te escondes tras ellas)
+    ...[640, 1180, 1960, 2420, 3050].map(x => ({ x, y: 212, w: 28, h: 20, t: 'cobertura' })),
+    // Plataformas hacia los secretos
+    { x: 30, y: 186, w: 60, h: 6, t: 'andamio' }, { x: 3080, y: 190, w: 50, h: 6, t: 'andamio' }, { x: 3150, y: 144, w: 60, h: 6, t: 'andamio' }
   ],
 
   /* Luces: farolas y neones. Las usa la iluminación dinámica. */
@@ -43,7 +48,7 @@ const Mundo = {
       ({ x, y: 150, r: 95, c: i % 2 ? '#21d4ff' : '#ff2e9a', farola: true, parpadeo: i === 3 || i === 6 })),
     { x: 730, y: 110, r: 80, c: '#21d4ff' }, { x: 1730, y: 110, r: 80, c: '#ff2e9a' },
     { x: 2930, y: 110, r: 80, c: '#21d4ff' },
-    { x: 2585, y: 215, r: 55, c: '#ff3b4e' }, { x: 3450, y: 195, r: 80, c: '#21d4ff' }
+    { x: 2585, y: 215, r: 55, c: '#ff3b4e' }, { x: 3450, y: 195, r: 80, c: '#21d4ff' }, { x: 3560, y: 190, r: 70, c: '#ff3b4e' }
   ],
 
   /* Decorado de fondo (no colisiona) */
@@ -55,7 +60,15 @@ const Mundo = {
   carteles: [
     { x: 700, y: 70, txt: 'NEOCORP', sub: 'COMPRA TU FUTURO' },
     { x: 1700, y: 70, txt: 'SYNTH-LIFE', sub: 'SIN DOLOR' },
-    { x: 2900, y: 70, txt: 'SECTOR 7', sub: 'ZONA CERRADA' }
+    { x: 2900, y: 70, txt: 'SECTOR 7', sub: 'ZONA CERRADA' },
+    { x: 3490, y: 70, txt: 'SALIDA', sub: 'HACIA EL SECTOR 2' }
+  ],
+  /* Enemigos del nivel: tipo, posición y zona de patrulla [xMin, xMax] */
+  enemigos: [
+    { id: 'e1', tipo: 'soldado', x: 700, pat: [600, 830] }, { id: 'e2', tipo: 'soldado', x: 1260, pat: [1150, 1420] },
+    { id: 'e3', tipo: 'dron', x: 1800, y: 110, pat: [1500, 2000] }, { id: 'e4', tipo: 'mercenario', x: 2150, pat: [2050, 2330] },
+    { id: 'e5', tipo: 'mutante', x: 2680, pat: [2620, 2740] }, { id: 'e6', tipo: 'soldado', x: 3000, pat: [2900, 3100] },
+    { id: 'e7', tipo: 'robot', x: 3200, pat: [3120, 3300] }
   ],
   peligros: [{ x: 2560, y: 206, w: 50, h: 26, desfase: 0 }],
 
@@ -70,10 +83,35 @@ const Mundo = {
     { t: 'terminal', id: 'doc_002', x: 2350, titulo: 'Radio rota // Mensaje grabado',
       texto: ['"...si alguien oye esto, el refugio sigue abierto."', '"Al final de la calle. No toquen los cables."'] },
     { t: 'espejo', x: 3385 },
-    { t: 'refugio', x: 3450 }
+    // Armas iniciales repartidas por el nivel
+    { t: 'arma', id: 'p_katana', x: 360, y: 232, arma: 'katana' },
+    { t: 'arma', id: 'p_plasma', x: 478, y: 184, arma: 'pistola_plasma' },
+    { t: 'arma', id: 'p_laser', x: 1665, y: 140, arma: 'rifle_laser' },
+    { t: 'arma', id: 'p_escopeta', x: 2040, y: 208, arma: 'escopeta' },
+    // Armas especiales (secretos en lugares altos)
+    { t: 'arma', id: 's_em', x: 1820, y: 96, arma: 'rifle_em' },
+    { t: 'arma', id: 's_lanzador', x: 2762, y: 192, arma: 'lanzador' },
+    { t: 'arma', id: 's_pulsos', x: 3180, y: 144, arma: 'pulsos' },
+    { t: 'arma', id: 's_canon', x: 60, y: 186, arma: 'canon' },
+    // Munición y salud
+    { t: 'muni', id: 'm1', x: 400, y: 232, tipo: 'bateria', n: 12 }, { t: 'muni', id: 'm2', x: 610, y: 232, tipo: 'bateria', n: 12 },
+    { t: 'muni', id: 'm3', x: 880, y: 232, tipo: 'plasma', n: 8 }, { t: 'muni', id: 'm4', x: 1250, y: 232, tipo: 'bateria', n: 12 },
+    { t: 'muni', id: 'm5', x: 1450, y: 232, tipo: 'laser', n: 30 }, { t: 'muni', id: 'm6', x: 1900, y: 232, tipo: 'cartuchos', n: 8 },
+    { t: 'muni', id: 'm7', x: 2300, y: 232, tipo: 'plasma', n: 6 }, { t: 'muni', id: 'm8', x: 2850, y: 232, tipo: 'granadas', n: 4 },
+    { t: 'muni', id: 'm9', x: 2480, y: 232, tipo: 'cartuchos', n: 6 }, { t: 'muni', id: 'm10', x: 3200, y: 232, tipo: 'laser', n: 20 },
+    { t: 'cura', id: 'c1', x: 1100, y: 232, n: 35 }, { t: 'cura', id: 'c2', x: 2900, y: 232, n: 35 },
+    { t: 'refugio', x: 3450 },
+    { t: 'salida', x: 3560 }
   ],
 
+  /* Sustituye los datos del mundo por los del nivel indicado (registrado en NIVELES) */
+  cargar(id) {
+    if (!NIVELES[id]) return false;
+    Object.assign(this, structuredClone(NIVELES[id])); this.iniciarCapas(); return true;
+  },
+
   reiniciarObjetos() {
+    this.objetos = this.objetos.filter(o => !o.temp);              // quita los objetos soltados por enemigos
     this.objetos.forEach(o => { if (o.t === 'dummy') { o.vida = 3; o.flash = 0; o.reaparece = 0; } });
   },
   chispasActivas(h, t) { return (t + h.desfase) % 240 < 90; },
@@ -199,6 +237,9 @@ const Mundo = {
         ctx.fillStyle = '#2a2142'; ctx.fillRect(s.x + 4, s.y + 6, 2, S - s.y - 6); ctx.fillRect(s.x + s.w - 6, s.y + 6, 2, S - s.y - 6);
         ctx.fillStyle = '#3a3350'; ctx.fillRect(s.x, s.y, s.w, s.h);
         ctx.fillStyle = '#6a5fa0'; ctx.fillRect(s.x, s.y, s.w, 1);
+      } else if (s.t === 'cobertura') {
+        ctx.fillStyle = '#3a3350'; ctx.fillRect(s.x, s.y, s.w, s.h); ctx.fillStyle = '#6a5fa0'; ctx.fillRect(s.x, s.y, s.w, 2);
+        ctx.fillStyle = '#ff3b4e'; ctx.fillRect(s.x + 3, s.y + 8, s.w - 6, 2); ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.fillRect(s.x + 10, s.y + 2, 1, s.h - 2);
       } else if (s.t === 'barrera') {
         ctx.fillStyle = '#2a1f3a'; ctx.fillRect(s.x, s.y, s.w, s.h);
         ctx.fillStyle = '#ff3b4e'; for (let y = s.y + 4; y < s.y + s.h - 4; y += 10) ctx.fillRect(s.x, y, s.w, 3);
@@ -222,6 +263,18 @@ const Mundo = {
         ctx.fillStyle = '#21d4ff'; ctx.fillRect(o.x - 20, S - 50, 40, 2); ctx.fillRect(o.x - 12, S - 40, 24, 1);
         ctx.fillStyle = '#17122a'; ctx.fillRect(o.x - 9, S - 38, 18, 38);
         ctx.fillStyle = '#21d4ff'; ctx.fillRect(o.x - 9, S - 38, 1, 38); ctx.fillRect(o.x + 8, S - 38, 1, 38);
+      } else if ((o.t === 'muni' || o.t === 'cura' || o.t === 'arma') && !recogido(o.id)) {
+        const y = o.y - 7 + Math.sin(t * 0.08 + o.x) * 1.5;
+        if (o.t === 'muni') { ctx.fillStyle = MUNICION[o.tipo].c; ctx.fillRect(o.x - 3, y, 6, 5); ctx.fillStyle = '#fff'; ctx.fillRect(o.x - 3, y, 6, 1); }
+        else if (o.t === 'cura') { ctx.fillStyle = '#fff'; ctx.fillRect(o.x - 3, y - 1, 7, 7); ctx.fillStyle = '#ff3b4e'; ctx.fillRect(o.x - 1, y, 3, 5); ctx.fillRect(o.x - 2, y + 1, 5, 3); }
+        else { ctx.save(); ctx.translate(o.x - 2, y + 3); ctx.rotate(-Math.PI / 2); ARMAS[o.arma].spr.forEach(s => { ctx.fillStyle = s[4]; ctx.fillRect(s[0], s[1] - 3, s[2], s[3]); }); ctx.restore();
+          ctx.globalAlpha = 0.5 + 0.4 * Math.sin(t * 0.15); ctx.strokeStyle = ARMAS[o.arma].color; ctx.strokeRect(o.x - 9, y - 3, 18, 11); ctx.globalAlpha = 1; }
+      } else if (o.t === 'salida') {                   // puerta de salida del nivel
+        const ab = Juego.salidaAbierta, c = ab ? '#21d4ff' : '#ff3b4e';
+        ctx.fillStyle = '#17122a'; ctx.fillRect(o.x - 14, S - 56, 28, 56);
+        ctx.fillStyle = c; ctx.fillRect(o.x - 14, S - 56, 28, 2); ctx.fillRect(o.x - 14, S - 56, 2, 56); ctx.fillRect(o.x + 12, S - 56, 2, 56);
+        ctx.globalAlpha = ab ? 0.35 + 0.2 * Math.sin(t * 0.1) : 0.2; ctx.fillRect(o.x - 11, S - 52, 22, 52); ctx.globalAlpha = 1;
+        if (!ab) ctx.fillRect(o.x - 3, S - 30, 6, 6);
       } else if (o.t === 'espejo') {                   // espejo: abre la personalización
         ctx.fillStyle = '#2a2142'; ctx.fillRect(o.x - 8, S - 36, 16, 30); ctx.fillRect(o.x - 1, S - 6, 2, 6);
         ctx.fillStyle = '#1d2a4a'; ctx.fillRect(o.x - 6, S - 34, 12, 26);
@@ -235,3 +288,8 @@ const Mundo = {
     }
   }
 };
+
+/* Registra esta zona como NIVEL 1 de la campaña (copia limpia de sus datos) */
+NIVELES[1] = structuredClone({ id: 1, nombre: Mundo.nombre, necesarios: Mundo.necesarios, ancho: Mundo.ancho, alto: Mundo.alto,
+  suelo: Mundo.suelo, inicio: Mundo.inicio, solidos: Mundo.solidos, luces: Mundo.luces, edificios: Mundo.edificios,
+  carteles: Mundo.carteles, peligros: Mundo.peligros, objetos: Mundo.objetos, enemigos: Mundo.enemigos });
